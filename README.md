@@ -1,78 +1,300 @@
-﻿# Agent OS
+# Agent OS
 
-Agent OS is the local-first orchestrator for a personal agent operating system. It provides the dashboard, model router, skill execution, connector integration, and cross-machine coordination.
+Local-first agentic operating system: one dashboard, shared memory across every model, extensible skills, and secure cross-machine coordination over a private Tailscale mesh.
 
-This repository contains the primary Agent OS package in `open-agent-os/` and is the entry point for the broader solution composed of the following repos:
+This repository contains the primary Agent OS package in `open-agent-os/` and is the entry point for the broader multi-repo solution.
 
-- `Agent-OS` - dashboard, mission control, model router, skill catalog, connector integration, and remote command orchestration.
-- `Agent-Memory` - shared memory brain built on Obsidian + LanceDB, with remote memory ingestion and search.
-- `paperclip-mesh-runner` - remote capability node runner for executing work on other machines over a secure mesh.
-- `O365 Browser plugin` - browser-based integration for secure Office 365 access from remote nodes.
-- `o365 plugin` - Microsoft 365 connector for Graph-based mail, calendar, OneDrive, and Teams access.
-- `Paperclip proposal skill` - proposal ingestion and drafting skill for firm proposal templates and opportunity-based draft generation.
+## Related repos
 
-## What this repo does
+| Repo | Role |
+|---|---|
+| **Agent-OS** *(this repo)* | Dashboard, mission control, model router, skills framework, remote command gateway |
+| **Agent-Memory** | Shared memory brain — Obsidian vault + LanceDB hybrid retrieval, HTTP + MCP API |
+| **paperclip-mesh-runner** | Remote capability node runtime — executes skills and connectors on any machine |
+| **o365 plugin** | Microsoft 365 Graph connector — mail, calendar, OneDrive, Teams |
+| **O365 Browser plugin** | Browser-based OWA fallback for IT-restricted Graph access |
+| **Paperclip proposal skill** | Proposal ingestion, template matching, and AI-assisted drafting |
 
-- Hosts the Agent OS dashboard and mission control UI.
-- Routes model calls through OpenRouter, local Ollama models, and Anthropic.
-- Provides a skills and tools framework for reusable capabilities.
-- Integrates memory, connectors, and agent workflows.
-- Supports cross-machine operation so remote Windows work nodes can contribute source data and remote commands.
+---
 
-## Capabilities
+## What this does
 
-- Local web dashboard for agents, jobs, connectors, and remote node orchestration.
-- Model routing with fallback and optional fusion ensembles.
-- Shared memory integration with Agent-Memory and external memory services.
-- Support for connectors and plugins, including Office 365 and browser-based node integration.
-- Proposal ingestion and drafting support via the Paperclip proposal skill.
-- Cross-machine execution and secure mesh coordination with remote nodes.
+- Runs the Agent OS HTTP server and dashboard at `http://localhost:3737`
+- Routes model calls through OpenRouter, local Ollama models, and Anthropic with automatic fallback
+- Maintains a registry of remote mesh nodes and orchestrates cross-machine work
+- Accepts inbound commands from remote nodes via a secure gateway API (`POST /command`)
+- Serves a live mesh status panel at `GET /dashboard` — node health, memory availability, ingestion jobs
+- Provides a drop-in skills and tools framework — add a folder, get a new capability
 
-## Requirements
+---
 
-Before installing this repo, make sure you have the following tools and services available:
+## Quick start (HQ machine)
 
-- Node.js 18+ and npm (required for `open-agent-os` and agent runtime packages).
-- `Agent-Memory` and a configured Obsidian vault if you want shared memory features.
-  - Obsidian is used as the local vault format for knowledge storage.
-  - LanceDB is used by the memory brain for embeddings and retrieval.
-- `paperclip-mesh-runner` / Paperclip tooling if you want remote capability nodes and mesh execution.
-- A model provider or local model runtime:
-  - OpenRouter, Anthropic, or Ollama for model routing.
-- Optional but recommended:
-  - `O365 Browser plugin` and `o365 plugin` for Office 365 connector workflows.
-  - `Paperclip proposal skill` for proposal template ingestion and draft generation.
-
-This repo can run the dashboard independently, but full capability requires the companion repos above.
-
-## Installation
-
-```powershell
-cd "Agent OS"
+```bash
 cd open-agent-os
-cp .env.example .env
-# Update .env with keys and paths, including OpenRouter, Ollama, Anthropic, connector credentials, and optional cross-machine settings.
+cp .env.example .env        # fill in keys — see .env.example for all fields
 npm install
-npm run setup
-npm run dev
+npm run setup               # creates ~/.open-agent-os directories
+npm run dev                 # server at http://localhost:3737
 ```
 
-The app should then be available at `http://localhost:3737`.
+Open `http://localhost:3737/dashboard` to see the live mesh status panel.
 
-## Structure
+---
 
-- `open-agent-os/` - main dashboard and runtime package.
-- `open-agent-os/docs/` - architecture, roadmap, memory, skills, and cross-machine documentation.
-- `open-agent-os/src/` - source code for the dashboard, router, skills, memory, and connectors.
+## Cross-machine setup
 
-## Cross-machine docs
+Three machines form a private mesh over Tailscale. No ports are exposed to the public internet.
 
-- `open-agent-os/docs/CROSS_MACHINE_ARCHITECTURE.md` — full cross-machine architecture design for HQ, remote work nodes, mesh networking, and shared memory.
+| Machine | Hostname | Capabilities |
+|---|---|---|
+| MacBook Pro 2026 (HQ) | `mbp-hq` | Agent OS + dashboard, local models, memory |
+| Windows laptop | `win-node` | M365 connector, proposal ingestion |
+| MacBook 2017 / Linux | `linux-worker` | Shell, render, research |
 
-## Next steps
+Full step-by-step setup is in [`open-agent-os/docs/TAILSCALE.md`](open-agent-os/docs/TAILSCALE.md). Summary:
 
-- Configure the shared memory service from `Agent-Memory`.
-- Configure remote nodes using `paperclip-mesh-runner` for source-aware execution.
-- Use `npm run nodes -- list` to inspect registered remote nodes.
-- Use `npm run ask -- "question"` with `MEMORY_SERVICE_URL` set to query remote memory services.
-- Use the dashboard to monitor agent jobs and remote ingestion status.
+### 1. Install Tailscale on every machine
+
+```bash
+# macOS
+brew install tailscale && sudo tailscaled & && tailscale up
+
+# Linux
+curl -fsSL https://tailscale.com/install.sh | sh && sudo tailscale up
+
+# Windows — download from tailscale.com/download
+```
+
+All machines must authenticate to the same Tailscale account. Enable **MagicDNS** in the admin console so each machine gets a stable `<hostname>.<tailnet>.ts.net` name.
+
+### 2. Apply the ACL policy
+
+In the Tailscale admin console → Access Controls, restrict mesh traffic to Agent OS ports only:
+
+```json
+{
+  "acls": [
+    {
+      "action": "accept",
+      "src": ["tag:agent-node"],
+      "dst": ["tag:agent-node:3737", "tag:agent-node:4000"]
+    }
+  ],
+  "tagOwners": {
+    "tag:agent-node": ["autogroup:owner"]
+  }
+}
+```
+
+Tag each machine `agent-node` in the Tailscale admin console (Machines → Edit tags).
+
+### 3. Configure each machine
+
+**MacBook HQ — `.env`**
+```env
+PORT=3737
+GATEWAY_INBOUND_KEY=<openssl rand -hex 32>
+REMOTE_NODE_REGISTRATION_KEY=<openssl rand -hex 32>
+MEMORY_SERVICE_URL=http://localhost:4000
+```
+
+**Windows node — `.env`**
+```env
+PORT=3737
+REMOTE_COMMAND_GATEWAY_URL=http://mbp-hq.<tailnet>.ts.net:3737
+```
+
+**Linux worker — `.env`**
+```env
+PORT=3737
+REMOTE_COMMAND_GATEWAY_URL=http://mbp-hq.<tailnet>.ts.net:3737
+```
+
+### 4. Register each remote node with HQ
+
+Run once per remote machine after starting Agent OS on HQ:
+
+```bash
+# Register Windows node
+curl -X POST http://mbp-hq.<tailnet>.ts.net:3737/remote/register \
+  -H "Authorization: Bearer <REMOTE_NODE_REGISTRATION_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"win-node","url":"http://win-node.<tailnet>.ts.net:3737","type":"runner","description":"Windows M365 node"}'
+
+# Register Linux worker
+curl -X POST http://mbp-hq.<tailnet>.ts.net:3737/remote/register \
+  -H "Authorization: Bearer <REMOTE_NODE_REGISTRATION_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"linux-worker","url":"http://linux-worker.<tailnet>.ts.net:3737","type":"runner","description":"Linux render/research node"}'
+```
+
+### 5. Verify the mesh
+
+```bash
+npm run status                              # terminal table — all nodes, live health
+npm run nodes -- list                       # list registered nodes
+npm run nodes -- health --name win-node     # ping a specific node
+```
+
+---
+
+## Dashboard
+
+Open `http://localhost:3737/dashboard` in any browser on the HQ machine. The page auto-refreshes every 5 seconds and shows four panels:
+
+| Panel | What it shows |
+|---|---|
+| **Mesh Connectivity** | Every registered node with UP/DOWN badge, type, latency, last-seen time |
+| **Memory Service** | Availability of `Agent-Memory` and any `type=memory` nodes |
+| **Connector & Ingestion** | Connector node status + live progress bars for active `ingest` jobs |
+| **Recent Jobs** | Last 10 dispatched jobs with status badges and timestamps |
+
+No build step — the dashboard is served directly from the Agent OS HTTP server.
+
+---
+
+## API reference
+
+All endpoints return JSON unless noted. Server runs on `PORT` (default `3737`).
+
+### Health and status
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| `GET` | `/health` | None | Service health; advertises `capabilities` and `gatewayAuthRequired` |
+| `GET` | `/status` | None | Node list, job count, cross-machine config URLs |
+| `GET` | `/dashboard` | None | Live HTML status panel |
+| `GET` | `/mesh/status` | None | Parallel health probe of all registered nodes |
+
+### Node registry
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| `GET` | `/nodes` | None | List all registered nodes |
+| `GET` | `/nodes/:name` | None | Get a single node record |
+| `DELETE` | `/nodes/:name` | None | Remove a node |
+| `GET` | `/nodes/:name/health` | None | Live ping; updates `lastSeen` on success |
+| `POST` | `/remote/register` | `REMOTE_NODE_REGISTRATION_KEY` | Register or update a remote node |
+
+### Outbound gateway (HQ → remote node)
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| `POST` | `/gateway/command` | None | Synchronous command dispatch to a named node |
+| `POST` | `/gateway/dispatch` | None | Async dispatch — returns `jobId` immediately |
+
+Body: `{ "nodeName": "win-node", "command": "ingest", "args": { ... } }`
+
+### Inbound gateway (remote node → HQ)
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| `POST` | `/command` | `GATEWAY_INBOUND_KEY` | Remote node sends a command intent to HQ |
+
+Supported commands: `status`, `node.list`, `node.health`, `memory.retrieve`, `model.call`, `dispatch`.
+
+```bash
+# Example: remote node queries HQ memory
+curl -X POST http://mbp-hq.<tailnet>.ts.net:3737/command \
+  -H "Authorization: Bearer <GATEWAY_INBOUND_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{"command":"memory.retrieve","args":{"query":"Q4 proposal template","topK":5},"requestId":"r1"}'
+
+# Example: remote node calls a HQ model
+curl -X POST http://mbp-hq.<tailnet>.ts.net:3737/command \
+  -H "Authorization: Bearer <GATEWAY_INBOUND_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{"command":"model.call","args":{"model":"sonnet","messages":[{"role":"user","content":"Summarise this."}]}}'
+```
+
+### Jobs
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| `GET` | `/jobs` | None | List all jobs |
+| `GET` | `/jobs/:id` | None | Get job status and result |
+| `POST` | `/jobs/:id/progress` | None | Push ingestion progress (0–100) from a connector node |
+
+---
+
+## CLI reference
+
+```bash
+npm run dev                                 # start server with file-watch reload
+npm run start                               # start server (production)
+npm run setup                               # create ~/.open-agent-os directories
+npm run index                               # build/rebuild memory index from vault
+npm run ask -- "question"                   # query memory + model router
+npm run status                              # print live mesh status table
+npm run nodes -- list                       # list all registered nodes
+npm run nodes -- status                     # full mesh status (same as npm run status)
+npm run nodes -- add --name NAME --url URL --type runner|memory|connector|generic
+npm run nodes -- remove --name NAME
+npm run nodes -- health --name NAME         # ping one node
+npm run nodes -- show --name NAME           # show stored node record
+npm run skills                              # list available skills
+npm run test                                # run all test suites
+npm run typecheck                           # TypeScript type check (no emit)
+```
+
+---
+
+## Environment variables
+
+See [`.env.example`](open-agent-os/.env.example) for the full annotated list.
+
+| Variable | Required | Description |
+|---|---|---|
+| `PORT` | No | HTTP server port (default `3737`) |
+| `OPENROUTER_API_KEY` | For cloud models | OpenRouter key (Claude, GLM, and 300+ others) |
+| `ANTHROPIC_API_KEY` | No | Direct Anthropic key (bypasses OpenRouter) |
+| `OLLAMA_URL` | For local models | Ollama base URL (default `http://localhost:11434`) |
+| `VAULT_PATH` | For memory | Absolute path to your Obsidian vault |
+| `MEMORY_SERVICE_URL` | For remote memory | Agent-Memory service URL |
+| `GATEWAY_INBOUND_KEY` | Recommended | Bearer key for `POST /command` on HQ |
+| `REMOTE_NODE_REGISTRATION_KEY` | Recommended | Bearer key for `POST /remote/register` |
+| `REMOTE_COMMAND_GATEWAY_URL` | On remote nodes | HQ URL as seen from this machine |
+
+---
+
+## Project structure
+
+```
+open-agent-os/
+├── src/
+│   ├── server.ts              # HTTP server — all endpoints
+│   ├── config.ts              # env loading and AppConfig type
+│   ├── cli/                   # ask, index, nodes, skills CLIs
+│   ├── cross-machine/
+│   │   ├── nodes.ts           # RemoteNodeRegistry — CRUD, ping, forwardCommand
+│   │   ├── jobs.ts            # JobStore — async job tracking with progress
+│   │   ├── mesh.ts            # MeshStatusChecker — parallel node health probing
+│   │   └── gateway.ts         # InboundGatewayHandler — POST /command routing
+│   ├── memory/                # vault loader, embeddings, LanceDB store, remote client
+│   ├── models/router.ts       # ModelRouter — fallback chains, fusion
+│   └── skills/                # registry and type contracts
+├── docs/
+│   ├── TAILSCALE.md           # step-by-step mesh setup with ACL config
+│   ├── CROSS_MACHINE_ARCHITECTURE.md  # topology, data flows, security model
+│   ├── ARCHITECTURE.md        # module map and agentic patterns
+│   ├── MEMORY.md              # 3-layer memory design
+│   ├── SKILLS.md              # skill and tool authoring guide
+│   └── ROADMAP.md             # phased build plan
+├── test/                      # test suites (no external services required)
+├── skills/                    # built-in skills (linkedin-post, etc.)
+└── profiles/                  # agent persona YAML files
+```
+
+---
+
+## Documentation
+
+| Doc | What it covers |
+|---|---|
+| [`docs/TAILSCALE.md`](open-agent-os/docs/TAILSCALE.md) | Full Tailscale mesh setup — install, ACL, per-machine config, verify, dispatch examples |
+| [`docs/CROSS_MACHINE_ARCHITECTURE.md`](open-agent-os/docs/CROSS_MACHINE_ARCHITECTURE.md) | Topology, data flows, implemented API surface, security model |
+| [`docs/ARCHITECTURE.md`](open-agent-os/docs/ARCHITECTURE.md) | Module map, profiles, agentic patterns (pipeline, kanban, fusion, judge loop) |
+| [`docs/MEMORY.md`](open-agent-os/docs/MEMORY.md) | 3-layer memory design: Obsidian → LanceDB → context assembler |
+| [`docs/SKILLS.md`](open-agent-os/docs/SKILLS.md) | Skill and tool authoring guide — drop a folder, get a capability |
+| [`docs/ROADMAP.md`](open-agent-os/docs/ROADMAP.md) | Phased build plan with completion status |

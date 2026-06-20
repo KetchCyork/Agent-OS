@@ -39,7 +39,14 @@ A build order designed so each phase is useful on its own, and so the foundation
 - [ ] Microsoft 365: OneDrive (proposals), Outlook + Teams (awareness/briefings)
 - [ ] Motion: pull/update tasks via API
 - [ ] Daily briefing: "what needs my attention" across email/Teams/tasks
-- [ ] Cross-machine architecture: HQ dashboard + memory brain + remote source/ingestion node + secure Tailscale mesh + remote command gateway
+- [x] Cross-machine architecture: HQ dashboard + memory brain + remote source/ingestion node + secure Tailscale mesh + remote command gateway
+  - [x] Remote node registry with persistence, health checks, and CRUD API
+  - [x] Outbound gateway: `POST /gateway/command` (sync) and `POST /gateway/dispatch` (async with JobStore)
+  - [x] Inbound gateway: `POST /command` with Bearer auth and 6 routed commands
+  - [x] Mesh status panel: `GET /mesh/status` (parallel probes) and `GET /dashboard` (live HTML, 5 s refresh)
+  - [x] Ingestion progress: `POST /jobs/:id/progress` with 0–100 progress field
+  - [x] Tailscale setup guide with ACL policy, per-machine config, and security notes
+  - [x] Full test coverage — 5 test suites, no external services required
 
 ## Phase 5 — LinkedIn content pipeline
 - [ ] Topic → draft post (your writing style) → judge → you approve
