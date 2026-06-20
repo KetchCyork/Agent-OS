@@ -1,0 +1,11 @@
+id: linkedin-post
+name: LinkedIn Post
+description: Draft a LinkedIn post in your voice, with an optional branded video.
+when_to_use: >
+  Use when the user wants to create LinkedIn content about a topic, especially
+  AI/SAP thought-leadership, optionally with a short branded motion-graphics video.
+version: 0.1.0
+author: open-agent-os
+model: writer
+tools:
+  - tools/draft.ts

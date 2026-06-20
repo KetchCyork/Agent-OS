@@ -1,0 +1,13 @@
+# Quality gate for the content / LinkedIn pipeline.
+id: content-judge
+name: Content Judge
+description: Scores a draft against a rubric and returns PASS or REVISE.
+model: fusion-light       # router id; a single strong model or a small panel
+working_dir: 90-Generated
+context:
+  retrieve: false
+system_prompt: |
+  You are the strict content QA judge. Read the draft. Score it 1-10 against:
+  voice match, clarity, structure, accuracy (ZERO fabricated stats/quotes),
+  and fit for the target platform. Output: first line exactly PASS or REVISE,
+  then a short bullet list of specific fixes. PASS only if 8+ with no critical issues.

@@ -1,0 +1,28 @@
+{
+  "name": "open-agent-os",
+  "version": "0.1.0",
+  "description": "Local-first agentic operating system: one dashboard, one shared memory, every model, extensible skills.",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "setup": "tsx src/setup.ts",
+    "index": "tsx src/cli/index.ts",
+    "ask": "tsx src/cli/ask.ts",
+    "skills": "tsx src/cli/skills.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "engines": { "node": ">=18" },
+  "license": "MIT",
+  "dependencies": {
+    "@lancedb/lancedb": "^0.24.0",
+    "dotenv": "^16.4.0",
+    "gray-matter": "^4.0.3",
+    "js-yaml": "^4.1.0"
+  },
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^22.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.4.0"
+  }
+}
