@@ -10,6 +10,7 @@
     "index": "tsx src/cli/index.ts",
     "ask": "tsx src/cli/ask.ts",
     "nodes": "tsx src/cli/nodes.ts",
+    "status": "tsx src/cli/nodes.ts status",
     "skills": "tsx src/cli/skills.ts",
     "test": "tsx test/run-tests.ts",
     "typecheck": "tsc --noEmit"
