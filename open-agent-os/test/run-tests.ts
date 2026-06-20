@@ -2,6 +2,7 @@ import { runRemoteNodeRegistryTests } from "./remote-node-registry.test.ts";
 import { runServerTests } from "./server.test.ts";
 import { runRemoteMemoryTests } from "./remote-memory.test.ts";
 import { runMeshStatusTests } from "./mesh-status.test.ts";
+import { runInboundGatewayTests } from "./inbound-gateway.test.ts";
 
 async function main() {
   console.log("Running open-agent-os cross-machine tests...");
@@ -18,6 +19,9 @@ async function main() {
 
     await runMeshStatusTests();
     console.log("✓ Mesh status + dashboard tests passed");
+
+    await runInboundGatewayTests();
+    console.log("✓ Inbound gateway tests passed");
 
     console.log("All tests passed.");
     console.log("Active handles:");

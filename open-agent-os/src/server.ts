@@ -3,10 +3,32 @@ import { AppConfig, loadConfig } from "./config.js";
 import { RemoteNodeRegistry, type RemoteNodeConfig, type RemoteCommandRequest } from "./cross-machine/nodes.js";
 import { JobStore } from "./cross-machine/jobs.js";
 import { MeshStatusChecker } from "./cross-machine/mesh.js";
+import { InboundGatewayHandler, HQ_CAPABILITIES, type GatewayServices } from "./cross-machine/gateway.js";
 
-export function createServer(registry: RemoteNodeRegistry, config: AppConfig, jobs?: JobStore): http.Server {
+export interface ServerOptions {
+  /** Inject memory retrieval for the inbound gateway (optional; heavy dep). */
+  memoryRetrieve?: GatewayServices["memoryRetrieve"];
+  /** Inject model-call for the inbound gateway (optional; heavy dep). */
+  modelCall?: GatewayServices["modelCall"];
+}
+
+export function createServer(
+  registry: RemoteNodeRegistry,
+  config: AppConfig,
+  jobs?: JobStore,
+  opts: ServerOptions = {},
+): http.Server {
   const jobStore = jobs ?? new JobStore();
   const meshChecker = new MeshStatusChecker(registry, config.memoryServiceUrl);
+  const gatewayHandler = new InboundGatewayHandler({
+    registry,
+    jobStore,
+    nodeCount: () => registry.list().then((n) => n.length),
+    memoryServiceUrl: config.memoryServiceUrl,
+    gatewayAuthRequired: !!config.gatewayInboundKey,
+    memoryRetrieve: opts.memoryRetrieve,
+    modelCall: opts.modelCall,
+  });
 
   const server = http.createServer(async (req, res) => {
     try {
@@ -15,7 +37,28 @@ export function createServer(registry: RemoteNodeRegistry, config: AppConfig, jo
       const method = req.method ?? "GET";
 
       if (method === "GET" && path === "/health") {
-        return sendJson(res, 200, { ok: true, service: "open-agent-os" });
+        return sendJson(res, 200, {
+          ok: true,
+          service: "open-agent-os",
+          gateway: true,
+          capabilities: HQ_CAPABILITIES,
+          gatewayAuthRequired: !!config.gatewayInboundKey,
+        });
+      }
+
+      // Inbound command from a remote mesh node.
+      if (method === "POST" && path === "/command") {
+        if (config.gatewayInboundKey && req.headers.authorization !== `Bearer ${config.gatewayInboundKey}`) {
+          return sendJson(res, 401, { ok: false, error: "invalid or missing gateway key" });
+        }
+        const body = await parseJsonBody(req, res);
+        if (!body) return;
+        const { command, args, requestId } = body as { command?: string; args?: unknown; requestId?: string };
+        if (!command) {
+          return sendJson(res, 400, { ok: false, error: "command is required" });
+        }
+        const result = await gatewayHandler.handle({ command, args, requestId });
+        return sendJson(res, result.ok ? 200 : 400, result);
       }
 
       if (method === "GET" && path === "/status") {

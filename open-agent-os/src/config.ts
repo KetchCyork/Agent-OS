@@ -26,6 +26,8 @@ export interface AppConfig {
   remoteNodesPath: string;
   remoteNodeRegistrationKey?: string;
   remoteCommandGatewayUrl?: string;
+  /** Shared secret for inbound /command requests from remote mesh nodes */
+  gatewayInboundKey?: string;
   router: RouterConfig;
 }
 
@@ -60,6 +62,7 @@ export function loadConfig(): AppConfig {
     remoteNodesPath: env("REMOTE_NODES_PATH", join(userBase, "remote-nodes.json")),
     remoteNodeRegistrationKey: env("REMOTE_NODE_REGISTRATION_KEY") || undefined,
     remoteCommandGatewayUrl: env("REMOTE_COMMAND_GATEWAY_URL") || undefined,
+    gatewayInboundKey: env("GATEWAY_INBOUND_KEY") || undefined,
     router: {
       models: defaultModels(),
       openrouterKey: env("OPENROUTER_API_KEY") || undefined,
