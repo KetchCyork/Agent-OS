@@ -35,10 +35,11 @@ A build order designed so each phase is useful on its own, and so the foundation
 - [ ] Multi-agent kanban with orchestrator + judge loop
 - [ ] Skills/tools catalog (shareable skill folders)
 
-## Phase 4 — Connectors (work productivity)
+## Phase 4 — Connectors & cross-machine
 - [ ] Microsoft 365: OneDrive (proposals), Outlook + Teams (awareness/briefings)
 - [ ] Motion: pull/update tasks via API
 - [ ] Daily briefing: "what needs my attention" across email/Teams/tasks
+- [ ] Cross-machine architecture: HQ dashboard + memory brain + remote source/ingestion node + secure Tailscale mesh + remote command gateway
 
 ## Phase 5 — LinkedIn content pipeline
 - [ ] Topic → draft post (your writing style) → judge → you approve

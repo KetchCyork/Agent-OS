@@ -62,8 +62,12 @@ The app should then be available at `http://localhost:3737`.
 ## Structure
 
 - `open-agent-os/` - main dashboard and runtime package.
-- `open-agent-os/docs/` - architecture, roadmap, memory, and skills documentation.
+- `open-agent-os/docs/` - architecture, roadmap, memory, skills, and cross-machine documentation.
 - `open-agent-os/src/` - source code for the dashboard, router, skills, and connectors.
+
+## Cross-machine docs
+
+- `open-agent-os/docs/CROSS_MACHINE_ARCHITECTURE.md` — full cross-machine architecture design for HQ, remote work nodes, mesh networking, and shared memory.
 
 ## Next steps
 

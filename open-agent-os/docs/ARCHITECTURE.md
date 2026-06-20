@@ -48,10 +48,10 @@ scrapes, and never uses automation that violates a platform's terms.
 
 ## Cross-machine setup
 
-- **Home MacBook Pro (32 GB):** always-on host. Runs Ollama (local models +
-  embeddings), the dashboard, and background jobs.
-- **Work machine:** runs the same app locally with the Microsoft 365 connector
-  (OneDrive/Outlook/Teams) and Motion. Work data is indexed locally and not sent to
-  cloud models unless you pick a cloud model for a task.
-- Vaults can be kept separate (personal vs work) or merged; the memory layer treats
-  them as pluggable sources.
+- **Home MacBook Pro (HQ):** always-on host. Runs Ollama (local models + embeddings), the dashboard, and background jobs.
+- **Work machine:** runs remote source ingestion, the Microsoft 365 connector (OneDrive/Outlook/Teams), and browser access. Raw work data stays local to that node.
+- **Shared memory brain:** `Agent-Memory` is the shared retrieval service built on Obsidian + LanceDB. It is accessible from both HQ and remote nodes.
+- **Secure mesh:** Tailscale connects HQ and remote nodes over a private network. This provides the remote command gateway and secure transport for memory and job orchestration.
+- **Proposal ingestion:** the `Paperclip proposal skill` runs on the memory-enabled side of the system, using template profiles and opportunity matching to draft business proposals.
+
+- Vaults can be kept separate (personal vs work) or merged; the memory layer treats them as pluggable sources.
