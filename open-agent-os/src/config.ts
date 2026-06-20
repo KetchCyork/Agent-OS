@@ -22,6 +22,9 @@ export interface AppConfig {
   userSkillsDir: string;
   ollamaUrl: string;
   embedModel: string;
+  memoryServiceUrl?: string;
+  remoteNodesPath: string;
+  remoteCommandGatewayUrl?: string;
   router: RouterConfig;
 }
 
@@ -52,6 +55,9 @@ export function loadConfig(): AppConfig {
     userSkillsDir: join(userBase, "skills"),
     ollamaUrl: env("OLLAMA_URL", "http://localhost:11434"),
     embedModel: env("EMBED_MODEL", "nomic-embed-text"),
+    memoryServiceUrl: env("MEMORY_SERVICE_URL") || undefined,
+    remoteNodesPath: env("REMOTE_NODES_PATH", join(userBase, "remote-nodes.json")),
+    remoteCommandGatewayUrl: env("REMOTE_COMMAND_GATEWAY_URL") || undefined,
     router: {
       models: defaultModels(),
       openrouterKey: env("OPENROUTER_API_KEY") || undefined,

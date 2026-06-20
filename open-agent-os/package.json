@@ -8,6 +8,7 @@
     "setup": "tsx src/setup.ts",
     "index": "tsx src/cli/index.ts",
     "ask": "tsx src/cli/ask.ts",
+    "nodes": "tsx src/cli/nodes.ts",
     "skills": "tsx src/cli/skills.ts",
     "typecheck": "tsc --noEmit"
   },

@@ -51,7 +51,7 @@ This repo can run the dashboard independently, but full capability requires the 
 cd "Agent OS"
 cd open-agent-os
 cp .env.example .env
-# Update .env with keys and paths, including OpenRouter, Ollama, Anthropic, and connector credentials.
+# Update .env with keys and paths, including OpenRouter, Ollama, Anthropic, connector credentials, and optional cross-machine settings.
 npm install
 npm run setup
 npm run dev
@@ -63,7 +63,7 @@ The app should then be available at `http://localhost:3737`.
 
 - `open-agent-os/` - main dashboard and runtime package.
 - `open-agent-os/docs/` - architecture, roadmap, memory, skills, and cross-machine documentation.
-- `open-agent-os/src/` - source code for the dashboard, router, skills, and connectors.
+- `open-agent-os/src/` - source code for the dashboard, router, skills, memory, and connectors.
 
 ## Cross-machine docs
 
@@ -73,4 +73,6 @@ The app should then be available at `http://localhost:3737`.
 
 - Configure the shared memory service from `Agent-Memory`.
 - Configure remote nodes using `paperclip-mesh-runner` for source-aware execution.
+- Use `npm run nodes -- list` to inspect registered remote nodes.
+- Use `npm run ask -- "question"` with `MEMORY_SERVICE_URL` set to query remote memory services.
 - Use the dashboard to monitor agent jobs and remote ingestion status.

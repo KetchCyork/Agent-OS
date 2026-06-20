@@ -17,6 +17,7 @@ import { loadConfig } from "../config.js";
 import { ModelRouter, type Message } from "../models/router.js";
 import { Embedder } from "../memory/embeddings.js";
 import { MemoryStore } from "../memory/store.js";
+import { RemoteMemoryClient } from "../memory/remote.js";
 
 async function main() {
   const argv = process.argv.slice(2);
@@ -30,14 +31,20 @@ async function main() {
   const router = new ModelRouter(cfg.router);
   const embedder = new Embedder({ ollamaUrl: cfg.ollamaUrl, model: cfg.embedModel });
   const store = new MemoryStore(cfg.dbPath);
+  const remoteMemory = cfg.memoryServiceUrl ? new RemoteMemoryClient(cfg.memoryServiceUrl) : undefined;
 
-  // Retrieve relevant memory (skip gracefully if nothing is indexed yet).
+  // Retrieve relevant memory (local or remote). Skip gracefully if nothing is indexed yet.
   let retrieved = "";
   try {
-    const qvec = await embedder.embed(question);
-    await store.open(qvec.length);
-    const hits = await store.retrieve(question, qvec, 6);
-    retrieved = hits.map((h) => `- (${h.chunk.notePath}) ${h.chunk.text}`).join("\n");
+    if (remoteMemory) {
+      const hits = await remoteMemory.retrieve(question, 6);
+      retrieved = hits.map((h) => `- (${h.notePath}) ${h.text}`).join("\n");
+    } else {
+      const qvec = await embedder.embed(question);
+      await store.open(qvec.length);
+      const hits = await store.retrieve(question, qvec, 6);
+      retrieved = hits.map((h) => `- (${h.chunk.notePath}) ${h.chunk.text}`).join("\n");
+    }
   } catch (err) {
     console.warn(`[memory] skipped: ${String(err)}`);
   }
