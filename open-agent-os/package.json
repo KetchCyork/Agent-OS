@@ -5,11 +5,13 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/server.ts",
+    "start": "tsx src/server.ts",
     "setup": "tsx src/setup.ts",
     "index": "tsx src/cli/index.ts",
     "ask": "tsx src/cli/ask.ts",
     "nodes": "tsx src/cli/nodes.ts",
     "skills": "tsx src/cli/skills.ts",
+    "test": "tsx test/run-tests.ts",
     "typecheck": "tsc --noEmit"
   },
   "engines": { "node": ">=18" },

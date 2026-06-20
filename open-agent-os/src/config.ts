@@ -24,6 +24,7 @@ export interface AppConfig {
   embedModel: string;
   memoryServiceUrl?: string;
   remoteNodesPath: string;
+  remoteNodeRegistrationKey?: string;
   remoteCommandGatewayUrl?: string;
   router: RouterConfig;
 }
@@ -57,6 +58,7 @@ export function loadConfig(): AppConfig {
     embedModel: env("EMBED_MODEL", "nomic-embed-text"),
     memoryServiceUrl: env("MEMORY_SERVICE_URL") || undefined,
     remoteNodesPath: env("REMOTE_NODES_PATH", join(userBase, "remote-nodes.json")),
+    remoteNodeRegistrationKey: env("REMOTE_NODE_REGISTRATION_KEY") || undefined,
     remoteCommandGatewayUrl: env("REMOTE_COMMAND_GATEWAY_URL") || undefined,
     router: {
       models: defaultModels(),

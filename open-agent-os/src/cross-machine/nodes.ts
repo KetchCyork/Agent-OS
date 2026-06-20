@@ -18,6 +18,19 @@ export interface RemoteNodeHealth {
   details?: unknown;
 }
 
+export interface RemoteCommandRequest {
+  command: string;
+  args?: unknown;
+  payload?: unknown;
+}
+
+export interface RemoteCommandResult {
+  ok: boolean;
+  status: string;
+  result?: unknown;
+  error?: string;
+}
+
 export class RemoteNodeRegistry {
   constructor(private filePath: string) {}
 
@@ -69,13 +82,14 @@ export class RemoteNodeRegistry {
     const url = node.url.replace(/\/+$/, "") + "/health";
     const headers: Record<string, string> = {
       "content-type": "application/json",
+      "connection": "close",
     };
     if (node.apiKey) {
       headers["authorization"] = `Bearer ${node.apiKey}`;
     }
 
     try {
-      const res = await fetch(url, { method: "GET", headers });
+      const res = await fetch(url, { method: "GET", headers, keepalive: false });
       const contentType = res.headers.get("content-type") ?? "";
       const body = contentType.includes("application/json") ? await res.json() : await res.text();
       return {
@@ -89,6 +103,39 @@ export class RemoteNodeRegistry {
         status: "unreachable",
         details: String(err),
       };
+    }
+  }
+
+  async forwardCommand(name: string, request: RemoteCommandRequest): Promise<RemoteCommandResult> {
+    const node = await this.get(name);
+    if (!node) {
+      return { ok: false, status: "node not found", error: `Unknown node ${name}` };
+    }
+
+    const url = node.url.replace(/\/+$/, "") + "/command";
+    const headers: Record<string, string> = {
+      "content-type": "application/json",
+      "connection": "close",
+    };
+    if (node.apiKey) {
+      headers["authorization"] = `Bearer ${node.apiKey}`;
+    }
+
+    try {
+      const res = await fetch(url, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(request),
+        keepalive: false,
+      });
+      const contentType = res.headers.get("content-type") ?? "";
+      const body = contentType.includes("application/json") ? await res.json() : await res.text();
+      if (!res.ok) {
+        return { ok: false, status: `${res.status} ${res.statusText}`, error: String(body) };
+      }
+      return { ok: true, status: `${res.status} ${res.statusText}`, result: body };
+    } catch (err) {
+      return { ok: false, status: "unreachable", error: String(err) };
     }
   }
 }
