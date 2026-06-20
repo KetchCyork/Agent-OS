@@ -7,6 +7,9 @@ This repository contains the primary Agent OS package in `open-agent-os/` and is
 - `Agent-OS` - dashboard, mission control, model router, skill catalog, connector integration, and remote command orchestration.
 - `Agent-Memory` - shared memory brain built on Obsidian + LanceDB, with remote memory ingestion and search.
 - `paperclip-mesh-runner` - remote capability node runner for executing work on other machines over a secure mesh.
+- `O365 Browser plugin` - browser-based integration for secure Office 365 access from remote nodes.
+- `o365 plugin` - Microsoft 365 connector for Graph-based mail, calendar, OneDrive, and Teams access.
+- `Paperclip proposal skill` - proposal ingestion and drafting skill for firm proposal templates and opportunity-based draft generation.
 
 ## What this repo does
 
@@ -18,11 +21,29 @@ This repository contains the primary Agent OS package in `open-agent-os/` and is
 
 ## Capabilities
 
-- Local web dashboard for agents, jobs, and connectors.
+- Local web dashboard for agents, jobs, connectors, and remote node orchestration.
 - Model routing with fallback and optional fusion ensembles.
-- Shared memory integration with external memory services.
-- Skills and tools for reusable actions.
-- Remote node health and source ingestion support.
+- Shared memory integration with Agent-Memory and external memory services.
+- Support for connectors and plugins, including Office 365 and browser-based node integration.
+- Proposal ingestion and drafting support via the Paperclip proposal skill.
+- Cross-machine execution and secure mesh coordination with remote nodes.
+
+## Requirements
+
+Before installing this repo, make sure you have the following tools and services available:
+
+- Node.js 18+ and npm (required for `open-agent-os` and agent runtime packages).
+- `Agent-Memory` and a configured Obsidian vault if you want shared memory features.
+  - Obsidian is used as the local vault format for knowledge storage.
+  - LanceDB is used by the memory brain for embeddings and retrieval.
+- `paperclip-mesh-runner` / Paperclip tooling if you want remote capability nodes and mesh execution.
+- A model provider or local model runtime:
+  - OpenRouter, Anthropic, or Ollama for model routing.
+- Optional but recommended:
+  - `O365 Browser plugin` and `o365 plugin` for Office 365 connector workflows.
+  - `Paperclip proposal skill` for proposal template ingestion and draft generation.
+
+This repo can run the dashboard independently, but full capability requires the companion repos above.
 
 ## Installation
 
