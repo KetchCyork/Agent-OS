@@ -28,6 +28,8 @@ export interface AppConfig {
   remoteCommandGatewayUrl?: string;
   /** Shared secret for inbound /command requests from remote mesh nodes */
   gatewayInboundKey?: string;
+  /** Persists last-checked timestamp and pending commit list for auto-update */
+  updateStatePath: string;
   router: RouterConfig;
 }
 
@@ -63,6 +65,7 @@ export function loadConfig(): AppConfig {
     remoteNodeRegistrationKey: env("REMOTE_NODE_REGISTRATION_KEY") || undefined,
     remoteCommandGatewayUrl: env("REMOTE_COMMAND_GATEWAY_URL") || undefined,
     gatewayInboundKey: env("GATEWAY_INBOUND_KEY") || undefined,
+    updateStatePath: env("UPDATE_STATE_PATH", join(userBase, "update-state.json")),
     router: {
       models: defaultModels(),
       openrouterKey: env("OPENROUTER_API_KEY") || undefined,
