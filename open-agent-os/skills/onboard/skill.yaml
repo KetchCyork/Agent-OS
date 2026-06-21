@@ -1,0 +1,14 @@
+id: onboard
+name: Onboard
+description: >
+  Day-1 setup wizard. Conducts a 7-question intake interview, writes answers to
+  aios-intake.md as you go, then scaffolds the full Day-1 file set: vault context
+  files, writing-style profile, connections registry, and a populated CLAUDE.md.
+  Idempotent — re-run any time after editing aios-intake.md.
+when_to_use: >
+  Use when the user says "set me up", "onboard me", "let's get started", "fill in
+  my intake", or has just cloned or installed Agent-OS for the first time.
+  Also use when the user says "re-onboard" or "refresh my setup" after editing
+  their intake file.
+version: 0.1.0
+author: open-agent-os
