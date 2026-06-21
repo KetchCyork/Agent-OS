@@ -1,0 +1,12 @@
+id: update
+name: Update
+description: >
+  Checks for upstream Agent-OS updates, shows a changelog, and with your explicit
+  approval applies them via git pull. User skills in ~/.open-agent-os/skills/ are
+  never touched — only built-in skills, src/, and vault-template/ are updated.
+when_to_use: >
+  Use when the user says "update agent-os", "check for updates", "any updates?",
+  "upgrade", or "are there new features?" Also run after being notified by the
+  background check that new commits are available in update-state.json.
+version: 0.1.0
+author: open-agent-os

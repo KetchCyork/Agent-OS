@@ -12,6 +12,8 @@
     "nodes": "tsx src/cli/nodes.ts",
     "status": "tsx src/cli/nodes.ts status",
     "skills": "tsx src/cli/skills.ts",
+    "update-check": "tsx src/cli/update.ts check",
+    "update": "tsx src/cli/update.ts apply",
     "test": "tsx test/run-tests.ts",
     "typecheck": "tsc --noEmit"
   },

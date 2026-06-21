@@ -25,6 +25,7 @@ This repository contains the primary Agent OS package in `open-agent-os/` and is
 - Accepts inbound commands from remote nodes via a secure gateway API (`POST /command`)
 - Serves a live mesh status panel at `GET /dashboard` — node health, memory availability, ingestion jobs
 - Provides a drop-in skills and tools framework — add a folder, get a new capability
+- Ships built-in skills (`/onboard` for Day-1 setup, `/update` for repo updates) with a clean pattern for user-authored skills in `~/.open-agent-os/skills/`
 
 ---
 
@@ -234,6 +235,9 @@ npm run nodes -- remove --name NAME
 npm run nodes -- health --name NAME         # ping one node
 npm run nodes -- show --name NAME           # show stored node record
 npm run skills                              # list available skills
+npm run update-check                        # check for upstream updates (no code changed)
+npm run update                              # check + apply updates with approval
+npm run update -- --schedule               # print cron / Task Scheduler setup instructions
 npm run test                                # run all test suites
 npm run typecheck                           # TypeScript type check (no emit)
 ```
@@ -255,6 +259,22 @@ See [`.env.example`](open-agent-os/.env.example) for the full annotated list.
 | `GATEWAY_INBOUND_KEY` | Recommended | Bearer key for `POST /command` on HQ |
 | `REMOTE_NODE_REGISTRATION_KEY` | Recommended | Bearer key for `POST /remote/register` |
 | `REMOTE_COMMAND_GATEWAY_URL` | On remote nodes | HQ URL as seen from this machine |
+| `UPDATE_STATE_PATH` | No | Where to store update check state (default `~/.open-agent-os/update-state.json`) |
+
+---
+
+## Built-in skills
+
+Skills live in `open-agent-os/skills/` (built-in) or `~/.open-agent-os/skills/` (user overrides — these are never touched by updates). Each skill is a folder with a `skill.yaml` descriptor and a `SKILL.md` that instructs Claude Code how to run it.
+
+| Skill | Trigger | What it does |
+|---|---|---|
+| `/onboard` | "set me up", "onboard me" | 7-question intake interview → scaffolds Day-1 vault files, writing-style profile, connections registry, and a populated `CLAUDE.md`. Idempotent — re-run after editing `aios-intake.md`. |
+| `/update` | "check for updates", "update agent-os" | Fetches upstream commits, shows a changelog, and applies via `git pull` only after explicit approval. User skills in `~/.open-agent-os/skills/` are never modified. |
+
+Run `npm run skills` to see all available skills including any user-authored ones.
+
+To add your own skill: drop a folder in `~/.open-agent-os/skills/<skill-name>/` with a `skill.yaml` (id, description, when\_to\_use) and a `SKILL.md`. User skills override built-ins by id. See [`docs/SKILLS.md`](open-agent-os/docs/SKILLS.md) for the full authoring guide.
 
 ---
 
@@ -265,7 +285,9 @@ open-agent-os/
 ├── src/
 │   ├── server.ts              # HTTP server — all endpoints
 │   ├── config.ts              # env loading and AppConfig type
-│   ├── cli/                   # ask, index, nodes, skills CLIs
+│   ├── cli/                   # ask, index, nodes, skills, update CLIs
+│   ├── update/
+│   │   └── state.ts           # UpdateStateStore — persists check timestamps and pending commits
 │   ├── cross-machine/
 │   │   ├── nodes.ts           # RemoteNodeRegistry — CRUD, ping, forwardCommand
 │   │   ├── jobs.ts            # JobStore — async job tracking with progress
@@ -282,7 +304,9 @@ open-agent-os/
 │   ├── SKILLS.md              # skill and tool authoring guide
 │   └── ROADMAP.md             # phased build plan
 ├── test/                      # test suites (no external services required)
-├── skills/                    # built-in skills (linkedin-post, etc.)
+├── skills/
+│   ├── onboard/               # /onboard — Day-1 setup wizard
+│   └── update/                # /update — upstream update check and apply
 └── profiles/                  # agent persona YAML files
 ```
 
