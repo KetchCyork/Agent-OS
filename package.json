@@ -2,18 +2,18 @@
   "name": "agent-os-root",
   "private": true,
   "scripts": {
-    "setup":        "npm --prefix open-agent-os run setup",
-    "dev":          "npm --prefix open-agent-os run dev",
-    "start":        "npm --prefix open-agent-os run start",
-    "install-deps": "npm --prefix open-agent-os install",
-    "index":        "npm --prefix open-agent-os run index",
-    "ask":          "npm --prefix open-agent-os run ask",
-    "status":       "npm --prefix open-agent-os run status",
-    "nodes":        "npm --prefix open-agent-os run nodes",
-    "skills":       "npm --prefix open-agent-os run skills",
-    "update-check": "npm --prefix open-agent-os run update-check",
-    "update":       "npm --prefix open-agent-os run update",
-    "test":         "npm --prefix open-agent-os run test",
-    "typecheck":    "npm --prefix open-agent-os run typecheck"
+    "setup":        "cd open-agent-os && npm run setup",
+    "dev":          "cd open-agent-os && npm run dev",
+    "start":        "cd open-agent-os && npm run start",
+    "install-deps": "cd open-agent-os && npm install",
+    "index":        "cd open-agent-os && npm run index",
+    "ask":          "cd open-agent-os && npm run ask",
+    "status":       "cd open-agent-os && npm run status",
+    "nodes":        "cd open-agent-os && npm run nodes",
+    "skills":       "cd open-agent-os && npm run skills",
+    "update-check": "cd open-agent-os && npm run update-check",
+    "update":       "cd open-agent-os && npm run update",
+    "test":         "cd open-agent-os && npm run test",
+    "typecheck":    "cd open-agent-os && npm run typecheck"
   }
 }
