@@ -31,15 +31,60 @@ This repository contains the primary Agent OS package in `open-agent-os/` and is
 
 ## Quick start (HQ machine)
 
+### Prerequisites
+
+| Requirement | Version | Notes |
+|---|---|---|
+| **Node.js** | ≥ 18 | `node --version` to check. Install from [nodejs.org](https://nodejs.org) or via `brew install node`. |
+| **Ollama** | Any | Required for local model inference and local embeddings. `brew install ollama` then `ollama serve`. |
+| **Obsidian** | Any | Recommended for browsing and editing your vault. Not required to run the server. |
+| **Tailscale** | Any | Required only for cross-machine mesh. Not needed for single-machine use. |
+
+### Install and run
+
 ```bash
 cd open-agent-os
-cp .env.example .env        # fill in keys — see .env.example for all fields
+
+# 1. Copy the env template and fill in your keys (see "Environment variables" below)
+cp .env.example .env
+
+# 2. Install dependencies (see "What npm install installs" below)
 npm install
-npm run setup               # creates ~/.open-agent-os directories
-npm run dev                 # server at http://localhost:3737
+
+# 3. Create ~/.open-agent-os/ directories (vault, memory index, skills, nodes registry)
+npm run setup
+
+# 4. Start the server
+npm run dev                 # development mode — restarts on file changes
+# or
+npm run start               # production mode
 ```
 
 Open `http://localhost:3737/dashboard` to see the live mesh status panel.
+
+### What `npm install` installs
+
+`npm install` fetches the packages listed in `open-agent-os/package.json`. There are no global installs — everything lands in `open-agent-os/node_modules/`.
+
+**Runtime packages** (shipped with the app):
+
+| Package | What it does |
+|---|---|
+| `@lancedb/lancedb` | Vector database — stores and queries the memory index for semantic + keyword search |
+| `dotenv` | Loads your `.env` file into `process.env` at startup |
+| `gray-matter` | Parses YAML frontmatter from Obsidian vault markdown files |
+| `js-yaml` | Reads `skill.yaml` descriptor files from the skills registry |
+
+**Dev packages** (needed to run TypeScript directly — no separate compile step):
+
+| Package | What it does |
+|---|---|
+| `tsx` | Runs `.ts` files directly via Node.js — powers all `npm run *` scripts |
+| `typescript` | TypeScript compiler, used only for `npm run typecheck` |
+| `@types/node` | TypeScript types for Node.js built-ins (`fs`, `http`, `os`, etc.) |
+| `@types/js-yaml` | TypeScript types for js-yaml |
+
+No database server, no Docker, no native build tools required. LanceDB is a native Node addon — its binary is downloaded automatically by npm for your platform.
 
 ---
 
