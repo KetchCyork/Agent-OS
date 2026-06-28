@@ -42,25 +42,31 @@ This repository contains the primary Agent OS package in `open-agent-os/` and is
 
 ### Install and run
 
+> **All `npm` commands must be run from inside the `open-agent-os/` subfolder**, not the repo root.
+> The `package.json` (and all scripts) live there. If you see `ENOENT … package.json`, you are in the wrong directory.
+
 ```bash
-cd open-agent-os
+# Clone the repo (if you haven't already)
+git clone https://github.com/KetchCyork/Agent-OS.git
+cd Agent-OS
 
-# 1. Copy the env template and fill in your keys (see "Environment variables" below)
-cp .env.example .env
+# 1. Copy the env template — do this from inside open-agent-os/
+cp open-agent-os/.env.example open-agent-os/.env
+# Then open open-agent-os/.env and fill in your keys (see "Environment variables" below)
 
-# 2. Install dependencies (see "What npm install installs" below)
-npm install
+# 2. Install dependencies — must run from inside open-agent-os/ (npm install cannot be forwarded)
+cd open-agent-os && npm install && cd ..
 
-# 3. Create ~/.open-agent-os/ directories (vault, memory index, skills, nodes registry)
-npm run setup
-
-# 4. Start the server
-npm run dev                 # development mode — restarts on file changes
+# 3–4. All other commands work from the repo root (Agent-OS/) via the root package.json
+npm run setup               # creates ~/.open-agent-os/ directories
+npm run dev                 # starts server at http://localhost:3737 (restarts on file changes)
 # or
-npm run start               # production mode
+npm run start               # production mode (no file watch)
 ```
 
 Open `http://localhost:3737/dashboard` to see the live mesh status panel.
+
+> **If you see `ENOENT … package.json`** you ran `npm install` from the repo root instead of `open-agent-os/`. Run `cd open-agent-os && npm install` to fix it. After that, all other commands (`npm run setup`, `npm run dev`, etc.) work from the repo root.
 
 ### What `npm install` installs
 

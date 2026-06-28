@@ -1,0 +1,19 @@
+{
+  "name": "agent-os-root",
+  "private": true,
+  "scripts": {
+    "setup":        "npm --prefix open-agent-os run setup",
+    "dev":          "npm --prefix open-agent-os run dev",
+    "start":        "npm --prefix open-agent-os run start",
+    "install-deps": "npm --prefix open-agent-os install",
+    "index":        "npm --prefix open-agent-os run index",
+    "ask":          "npm --prefix open-agent-os run ask",
+    "status":       "npm --prefix open-agent-os run status",
+    "nodes":        "npm --prefix open-agent-os run nodes",
+    "skills":       "npm --prefix open-agent-os run skills",
+    "update-check": "npm --prefix open-agent-os run update-check",
+    "update":       "npm --prefix open-agent-os run update",
+    "test":         "npm --prefix open-agent-os run test",
+    "typecheck":    "npm --prefix open-agent-os run typecheck"
+  }
+}
