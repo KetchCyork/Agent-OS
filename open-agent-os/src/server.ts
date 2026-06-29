@@ -1,3 +1,4 @@
+import "dotenv/config";
 import http from "node:http";
 import { AppConfig, loadConfig } from "./config.js";
 import { RemoteNodeRegistry, type RemoteNodeConfig, type RemoteCommandRequest } from "./cross-machine/nodes.js";
